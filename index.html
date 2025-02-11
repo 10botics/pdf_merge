@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Merger</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        input[type="file"] {
+            margin: 10px 0;
+        }
+        .file-input {
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+        }
+        .file-input label {
+            min-width: 100px;
+        }
+    </style>
+</head>
+<body>
+    <h1>PDF Merger</h1>
+    <div class="container">
+        <h3>Select PDF Files (Max 5)</h3>
+        <div class="file-input">
+            <label>PDF 1:</label>
+            <input type="file" id="pdf1" accept=".pdf" required>
+        </div>
+        <div class="file-input">
+            <label>PDF 2:</label>
+            <input type="file" id="pdf2" accept=".pdf">
+        </div>
+        <div class="file-input">
+            <label>PDF 3:</label>
+            <input type="file" id="pdf3" accept=".pdf">
+        </div>
+        <div class="file-input">
+            <label>PDF 4:</label>
+            <input type="file" id="pdf4" accept=".pdf">
+        </div>
+        <div class="file-input">
+            <label>PDF 5:</label>
+            <input type="file" id="pdf5" accept=".pdf">
+        </div>
+        <button onclick="mergePDFs()">Merge PDFs</button>
+    </div>
+
+    <script>
+        async function mergePDFs() {
+            // Get all PDF files
+            const pdfFiles = [];
+            for (let i = 1; i <= 5; i++) {
+                const file = document.getElementById(`pdf${i}`).files[0];
+                if (file) {
+                    pdfFiles.push(file);
+                }
+            }
+
+            if (pdfFiles.length === 0) {
+                alert('Please select at least one PDF file');
+                return;
+            }
+
+            try {
+                // Create a new PDF document
+                const mergedPdf = await PDFLib.PDFDocument.create();
+
+                // Process each PDF file
+                for (const file of pdfFiles) {
+                    const pdfData = await file.arrayBuffer();
+                    const pdfDoc = await PDFLib.PDFDocument.load(pdfData);
+                    
+                    // Copy pages from the PDF
+                    const pages = await mergedPdf.copyPages(pdfDoc, pdfDoc.getPageIndices());
+                    pages.forEach((page) => mergedPdf.addPage(page));
+                }
+
+                // Save the merged PDF
+                const mergedPdfFile = await mergedPdf.save();
+
+                // Create a download link
+                const downloadLink = document.createElement('a');
+                downloadLink.href = URL.createObjectURL(new Blob([mergedPdfFile], { type: 'application/pdf' }));
+                downloadLink.download = 'merged.pdf';
+                downloadLink.click();
+
+            } catch (error) {
+                console.error('Error merging PDFs:', error);
+                alert('Error merging PDFs. Please check the console for details.');
+            }
+        }
+    </script>
+</body>
+</html> 

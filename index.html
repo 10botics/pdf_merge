@@ -100,8 +100,13 @@
                     pages.forEach((page) => mergedPdf.addPage(page));
                 }
 
-                // Save the merged PDF
-                const mergedPdfFile = await mergedPdf.save();
+                // Save the merged PDF with compression options
+                const mergedPdfFile = await mergedPdf.save({
+                    useObjectStreams: true,
+                    addDefaultPage: false,
+                    objectsStack: [],
+                    updateFieldAppearances: false
+                });
 
                 // Create a download link
                 const downloadLink = document.createElement('a');
